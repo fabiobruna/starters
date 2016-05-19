@@ -10,6 +10,35 @@
  * ==================================================================== <SOURCE>
  */
 
+/*
+ * Variabelen aan te passen voor de werking van het bestand
+ */
+
+    $naamtab1 = '**NAAMTAB1**';
+    $naamtab2 = '**NAAMTAB2**';
+    $naambestand = '**NAAMBESTAND**';
+    $pad = '//mchaaglanden/mchdfs/DWH/Algemeen/bestanden/uit/';
+    $onderwerp = 'Maandelijks bestand';
+    // Ontvangers(datawarehous krijgt standaard een kopie)
+    $to = array('datawarehouse@mchaaglanden.nl','**ONTVANGER**');
+    $message  = '
+        Beste collega,
+
+        Bijgevoegd een maandelijks bestand.
+
+        --
+        Datawarehouse Medisch Centrum Haaglanden
+        Onze producten http://dwh.mchaaglanden.local/index/
+
+        '.$pad.$filename.'
+        ';
+
+    // Periode die in de naam van het bestand moet komen, standaard jaarmaanddag
+    $now = date('Ymd');
+    // Bestand verwijderen na mailen?
+    $verwijderenverwijderen = true;
+
+
 function DisplayErrors()
 {
     $errors = sqlsrv_errors(SQLSRV_ERR_ERRORS);
@@ -26,11 +55,17 @@ include('PHPExcel/Writer/Excel2007.php');
 echo "bezig met tablad 1 (van 2) ..." ."\r\n";
 $sql = GetSQL1();
 
-$arrTEXTColumns = array();
-// **OPTIONEEL AANPASSEN**
-// We teller vanaf kolom 0. Zet een kolom om 1 om er een tekstveld van te maken
-// $arrTEXTColumns[0] = 1;
-// $arrTEXTColumns[2] = 1;
+/*
+ * Optioneel: geef aan welke velden "echt" tekst zijn(voorloopnullen)
+ * We beginnen met tellen bij 0
+ */
+
+    $arrTEXTColumns = array();
+    // **OPTIONEEL AANPASSEN**
+    // We teller vanaf kolom 0. Zet een kolom om 1 om er een tekstveld van te maken
+    // $arrTEXTColumns[0] = 1;
+    // $arrTEXTColumns[2] = 1;
+
 
 @set_time_limit(0);
 
@@ -48,7 +83,7 @@ $nrOfFields  = sqlsrv_num_fields($result);
 
 $objPHPExcel = new PHPExcel();
 $objPHPExcel->setActiveSheetIndex(0);
-$objPHPExcel->getActiveSheet()->setTitle('**NAAMTAB**');
+$objPHPExcel->getActiveSheet()->setTitle($naamtab1);
 
 $rowIndex = 1;
 
@@ -103,7 +138,7 @@ $nrOfFields  = sqlsrv_num_fields($result);
 
 $objPHPExcel = new PHPExcel();
 $objPHPExcel->setActiveSheetIndex(0);
-$objPHPExcel->getActiveSheet()->setTitle('**NAAMTAB**');
+$objPHPExcel->getActiveSheet()->setTitle($naamtab2);
 
 $rowIndex = 1;
 
@@ -141,39 +176,27 @@ while (@ob_end_clean());
 echo "Mailen van de excel ..." ."\r\n";
 $objPHPExcel->setActiveSheetIndex(0);
 
-$now = date('Ymd');
-
-$filename = '**NAAMBESTAND**'.$now.'.xlsx';
+$filename = $naambestand.$now.'.xlsx';
 
 $objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
-$objWriter->save('//mchaaglanden/mchdfs/DWH/Algemeen/bestanden/uit/'.$filename);
+$objWriter->save($pad.$filename);
 
 $from     = 'datawarehouse@mchaaglanden.nl';
-$to       = array('datawarehouse@mchaaglanden.nl','**ONTVANGER**');
-$to       = array('datawarehouse@mchaaglanden.nl');
-$subject  = '**ONDERWERP MAIL**';
-$message  = '
-Beste collega,
-
-Bijgevoegd een maandelijkse bestand.
-
---
-Datawarehouse Medisch Centrum Haaglanden
-Onze producten http://dwh.mchaaglanden.local/index/
-
-**LOKATIE BESTAND**
-';
+$subject  = $onderwerp;
 
 $mail = new htmlMimeMail5();
 $mail->setFrom($from);
 $mail->setSubject($subject);
 $mail->setText($message);
-$mail->addAttachment(new fileAttachment('\\\\mchaaglanden\\mchdfs\\DWH\\Algemeen\\bestanden\\uit\\'.$filename));
+$mail->addAttachment(new fileAttachment($pad.$filename));
 $mail->send($to);
 
-unlink('\\\\mchaaglanden\\mchdfs\\DWH\\Algemeen\\bestanden\\uit\\'.$filename);
+if ($verwijderen) {
+    unlink($pad.$filename);
+}
 
 return;
+
 
 function GetSQL1()
 {

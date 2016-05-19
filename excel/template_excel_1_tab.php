@@ -24,7 +24,7 @@
     $message  = '
         Beste collega,
 
-        Bijgevoegd een maandelijkse bestand.
+        Bijgevoegd een maandelijks bestand.
 
         --
         Datawarehouse Medisch Centrum Haaglanden
