@@ -10,7 +10,6 @@
  * ==================================================================== <SOURCE>
  */
 
-
 /*
  * Variabelen aan te passen voor de werking van het bestand
  */
